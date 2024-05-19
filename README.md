@@ -9,3 +9,4 @@ Relevant functions:
 2.  generate_embeddings  -> To generate embeddings for the given text using Sentence Transformers
 3.  near_neigh   -> Function that implements nearest_neighbor search
 
+The main program is 'nearest_neighbor.py', and it's run simply by writing nearest_neighbor.py in the console.
