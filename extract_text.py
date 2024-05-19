@@ -4,9 +4,11 @@ Date: 18/05/24
 Name: extract_text.py
 Principal functions:
     1. extract_text_from_pdf
+    2. extract_text_from_docx
 """
 
 import fitz  
+from docx import Document
 
 def extract_text_from_pdf(pdf_path, main_title="", top_margin=50, bottom_margin=50):
     """
@@ -63,9 +65,56 @@ def extract_text_from_pdf(pdf_path, main_title="", top_margin=50, bottom_margin=
         print(f"An error occurred: {e}")
         return None
 
+def extract_text_from_docx(docx_path):
+    """
+    Function to extract text from a DOCX file, ignoring headers and footers, and excluding typical email headers.
+    """
+    try:
+        document = Document(docx_path)
+        all_text = []
+        header_texts = set()
+        footer_texts = set()
+        
+        # Extract headers and footers from each section
+        for section in document.sections:
+            header = section.header
+            footer = section.footer
+            
+            for paragraph in header.paragraphs:
+                header_texts.add(paragraph.text.strip())
+            
+            for paragraph in footer.paragraphs:
+                footer_texts.add(paragraph.text.strip())
+        
+        in_email_body = False
+        email_headers = ["message-id:", "date:", "from:", "to:", "subject:", "cc:", "mime-version:",\
+                         "content-type:", "content-transfer-encoding:", "bcc:", "x-from", "x-to", "x-cc:",\
+                         "x-bcc", "x-folder", "x-origin", "x-filename"]
+
+        for paragraph in document.paragraphs:
+            paragraph_text = paragraph.text.strip()
+            
+            # Identify the start of the email body by looking for typical email headers
+            if any(paragraph_text.lower().startswith(header) for header in email_headers):
+                continue  # Skip typical email header lines
+
+            # Skip headers and footers
+            if paragraph_text in header_texts or paragraph_text in footer_texts:
+                continue
+
+            # Include paragraph text
+            all_text.append(paragraph_text)
+        
+        return "\n".join(all_text).strip()
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return None
+
 def main():
-    pdf_path = 'Salim v Mitchell - Deposition of Jose Rodriguez.pdf'  
-    text = extract_text_from_pdf(pdf_path, main_title='',top_margin=50, bottom_margin=50)
+    #pdf_path = 'Salim v Mitchell - Deposition of Jose Rodriguez.pdf'  
+    #text = extract_text_from_pdf(pdf_path, main_title='',top_margin=50, bottom_margin=50)
+    docx_path = 'Message-ID_ _29870958.docx'
+    text = extract_text_from_docx(docx_path)
     if text:
         print(text)
     else:
